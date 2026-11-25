@@ -6,12 +6,43 @@ import type { SiteConfig } from './site.config';
  */
 export const siteConfig: SiteConfig = {
   site: {
+    siteName: 'Rafi Tekno [DEMO]',
     title: 'Rafi Tekno [DEMO] | Link Resmi & Media Kit',
     description:
       '[DEMO] Kreator review gadget & aksesori harian di TikTok. Lihat media kit, portofolio, dan kontak kerja sama.',
     canonicalUrl: 'https://example.com',
     ogImage: '/images/demo-og.svg',
     locale: 'id_ID',
+    pages: {
+      home: {
+        title: 'Rafi Tekno [DEMO] | Link Resmi & Media Kit',
+        description: '[DEMO] Link-in-bio, media kit review gadget, dan panduan konten HP.',
+        ogImage: '/images/demo-og.svg',
+      },
+      bio: {
+        title: 'Rafi Mahendra [DEMO] (@rafi.tekno) | Link & Media Kit',
+        description: '[DEMO] Media kit, rate card, dan portofolio kerja sama brand teknologi.',
+        ogImage: '/images/demo-portfolio-1.svg',
+      },
+      produk: {
+        title: 'Panduan Video Review Gadget [DEMO] | Rafi Tekno',
+        description: '[DEMO] Bikin video review gadget tajam hanya pakai kamera HP.',
+        ogImage: '/images/demo-og.svg',
+      },
+      privasi: {
+        title: 'Kebijakan Privasi | Rafi Tekno [DEMO]',
+        description: '[DEMO] Informasi pengelolaan data pengunjung dan analitik.',
+        ogImage: '/images/demo-og.svg',
+      },
+      thankYou: {
+        title: 'Terima Kasih | Rafi Tekno [DEMO]',
+        description: '[DEMO] Konfirmasi pesanan panduan kreator.',
+      },
+      notFound: {
+        title: 'Halaman Tidak Ditemukan | Rafi Tekno [DEMO]',
+        description: '[DEMO] Halaman tidak ditemukan.',
+      },
+    },
   },
   tracking: {
     tiktokPixelId: '',

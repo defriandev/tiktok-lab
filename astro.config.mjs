@@ -8,7 +8,11 @@ const siteUrl = validateBuildEnv();
 export default defineConfig({
   output: 'static',
   site: siteUrl,
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      filter: (page) => !page.endsWith('/terima-kasih/') && !page.endsWith('/404/'),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

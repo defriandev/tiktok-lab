@@ -3,12 +3,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteConfig } from '../config/active.config';
 
 const { profile } = siteConfig.linkInBio;
+const { notFound } = siteConfig.site.pages;
 ---
 
 <BaseLayout
-  title={`Halaman Tidak Ditemukan | ${profile.name}`}
-  description="Maaf, halaman yang Anda cari tidak tersedia."
+  title={notFound.title}
+  description={notFound.description}
   canonicalPath="/404"
+  noindex={true}
 >
   <section class="space-y-5 py-12 text-center">
     <p class="text-xs font-bold uppercase tracking-widest text-slate-500">404</p>

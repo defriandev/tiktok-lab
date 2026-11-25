@@ -53,13 +53,28 @@ export interface FaqItem {
   answer: string;
 }
 
+export interface PageSeo {
+  title: string;
+  description: string;
+  ogImage?: string;
+}
+
 export interface SiteConfig {
   site: {
+    siteName: string;
     title: string;
     description: string;
     canonicalUrl: string;
     ogImage: string;
     locale: string;
+    pages: {
+      home: PageSeo;
+      bio: PageSeo;
+      produk: PageSeo;
+      privasi: PageSeo;
+      thankYou: PageSeo;
+      notFound: PageSeo;
+    };
   };
   tracking: {
     /** Public TikTok Pixel ID (set TODO until client provides it). */
@@ -163,11 +178,42 @@ export interface SiteConfig {
 
 export const siteConfig: SiteConfig = {
   site: {
+    siteName: 'TODO: Nama Kreator',
     title: 'TODO: Nama Kreator | Landing Page Resmi',
     description: 'TODO: Deskripsi singkat kreator dan penawaran utama untuk bio dan SEO.',
     canonicalUrl: 'https://example.com',
     ogImage: '/og-default.webp',
     locale: 'id_ID',
+    pages: {
+      home: {
+        title: 'TODO: Nama Kreator | Landing Page Resmi',
+        description: 'TODO: Deskripsi singkat kreator dan pilihan tautan resmi.',
+        ogImage: '/og-default.webp',
+      },
+      bio: {
+        title: 'TODO: Nama Kreator (@todokreator) | Link-in-Bio & Media Kit',
+        description: 'TODO: Tautan resmi, statistik audiens, portofolio, dan kerja sama brand.',
+        ogImage: '/og-bio.webp',
+      },
+      produk: {
+        title: 'TODO: Nama Produk Digital | Nama Kreator',
+        description: 'TODO: Solusi praktis dan isi paket produk digital untuk kreator & pembeli.',
+        ogImage: '/og-produk.webp',
+      },
+      privasi: {
+        title: 'Kebijakan Privasi | TODO: Nama Kreator',
+        description: 'Informasi pengelolaan data pengunjung, cookie, dan analitik.',
+        ogImage: '/og-default.webp',
+      },
+      thankYou: {
+        title: 'Terima Kasih | TODO: Nama Kreator',
+        description: 'Konfirmasi pesanan dan informasi akses produk.',
+      },
+      notFound: {
+        title: 'Halaman Tidak Ditemukan | TODO: Nama Kreator',
+        description: 'Halaman yang Anda cari tidak tersedia.',
+      },
+    },
   },
   tracking: {
     tiktokPixelId: 'TODO_TIKTOK_PIXEL_ID',

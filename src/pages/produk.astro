@@ -8,12 +8,14 @@ import LeadForm from '../components/LeadForm.astro';
 import StickyMobileCta from '../components/StickyMobileCta.astro';
 import { siteConfig } from '../config/active.config';
 
-const { hero, offer, leadForm } = siteConfig.digitalProduct;
+const { leadForm } = siteConfig.digitalProduct;
+const { produk } = siteConfig.site.pages;
 ---
 
 <BaseLayout
-  title={`${offer.productName} | ${siteConfig.linkInBio.profile.name}`}
-  description={hero.subheadline}
+  title={produk.title}
+  description={produk.description}
+  ogImage={produk.ogImage}
   canonicalPath="/produk"
 >
   <div class="space-y-8 pb-28">

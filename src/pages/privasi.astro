@@ -3,11 +3,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteConfig } from '../config/active.config';
 
 const { profile } = siteConfig.linkInBio;
+const { privasi } = siteConfig.site.pages;
 ---
 
 <BaseLayout
-  title={`Kebijakan Privasi | ${profile.name}`}
-  description="Informasi ringkas pengelolaan data pengunjung dan analitik."
+  title={privasi.title}
+  description={privasi.description}
+  ogImage={privasi.ogImage}
   canonicalPath="/privasi"
 >
   <article class="space-y-5 py-4 text-sm text-slate-700 leading-relaxed">

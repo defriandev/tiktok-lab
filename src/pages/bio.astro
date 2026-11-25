@@ -6,12 +6,13 @@ import PortfolioGallery from '../components/PortfolioGallery.astro';
 import BrandInquiryForm from '../components/BrandInquiryForm.astro';
 import { siteConfig } from '../config/active.config';
 
-const { profile } = siteConfig.linkInBio;
+const { bio } = siteConfig.site.pages;
 ---
 
 <BaseLayout
-  title={`${profile.name} (${profile.handle}) | Link & Media Kit`}
-  description={profile.bio}
+  title={bio.title}
+  description={bio.description}
+  ogImage={bio.ogImage}
   canonicalPath="/bio"
 >
   <div class="space-y-8 pb-8">

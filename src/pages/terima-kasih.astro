@@ -3,12 +3,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteConfig } from '../config/active.config';
 
 const { productName } = siteConfig.digitalProduct.offer;
+const { thankYou } = siteConfig.site.pages;
 ---
 
 <BaseLayout
-  title={`Terima Kasih | ${productName}`}
-  description="Konfirmasi pesanan dan akses produk digital Anda."
+  title={thankYou.title}
+  description={thankYou.description}
   canonicalPath="/terima-kasih"
+  noindex={true}
 >
   <section class="space-y-5 py-10 text-center">
     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700">

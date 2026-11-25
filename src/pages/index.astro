@@ -1,11 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteConfig } from '../config/active.config';
+const { home } = siteConfig.site.pages;
 ---
 
 <BaseLayout
-  title={siteConfig.site.title}
-  description={siteConfig.site.description}
+  title={home.title}
+  description={home.description}
+  ogImage={home.ogImage}
   canonicalPath="/"
 >
   <section class="space-y-6 py-8">

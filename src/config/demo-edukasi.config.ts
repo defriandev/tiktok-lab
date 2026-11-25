@@ -6,12 +6,43 @@ import type { SiteConfig } from './site.config';
  */
 export const siteConfig: SiteConfig = {
   site: {
+    siteName: 'Nadia Belajar [DEMO]',
     title: 'Nadia Belajar [DEMO] | Template Notion Produktivitas',
     description:
       '[DEMO] Atur jadwal kuliah, tugas, dan catatan harian lebih rapi dengan Template Notion siap pakai.',
     canonicalUrl: 'https://example.com',
     ogImage: '/images/demo-og.svg',
     locale: 'id_ID',
+    pages: {
+      home: {
+        title: 'Nadia Belajar [DEMO] | Landing Page Resmi',
+        description: '[DEMO] Pilih halaman Link-in-Bio atau Template Notion Produktivitas.',
+        ogImage: '/images/demo-og.svg',
+      },
+      bio: {
+        title: 'Nadia Pratama [DEMO] (@nadia.belajar) | Link & Media Kit',
+        description: '[DEMO] Tips belajar efektif, media kit kreator edukasi, dan kerja sama brand.',
+        ogImage: '/images/demo-portfolio-1.svg',
+      },
+      produk: {
+        title: 'Template Notion Sistem Belajar [DEMO] | Nadia Belajar',
+        description: '[DEMO] Rapikan jadwal kuliah, tugas, dan target harian dalam 10 menit.',
+        ogImage: '/images/demo-og.svg',
+      },
+      privasi: {
+        title: 'Kebijakan Privasi | Nadia Belajar [DEMO]',
+        description: '[DEMO] Informasi pengelolaan data pengunjung dan analitik.',
+        ogImage: '/images/demo-og.svg',
+      },
+      thankYou: {
+        title: 'Terima Kasih | Nadia Belajar [DEMO]',
+        description: '[DEMO] Konfirmasi pesanan Template Notion.',
+      },
+      notFound: {
+        title: 'Halaman Tidak Ditemukan | Nadia Belajar [DEMO]',
+        description: '[DEMO] Halaman tidak ditemukan.',
+      },
+    },
   },
   tracking: {
     tiktokPixelId: '',
