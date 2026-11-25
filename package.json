@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:prod": "node -e \"process.env.PRODUCTION_CHECK='true'; import('child_process').then(m => m.execSync('npx astro build', { stdio: 'inherit' }))\"",
+    "predeploy": "sh scripts/predeploy-check.sh",
     "preview": "astro preview",
     "astro": "astro",
     "typecheck": "tsc --noEmit"

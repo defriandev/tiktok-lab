@@ -6,50 +6,54 @@ Paket template landing page berbasis Astro (output statis), Tailwind CSS, dan Ty
 - `/` — Halaman indeks pratinjau template
 - `/bio` — **Template 1**: Link-in-bio + Media Kit (`B-01` s.d. `B-05`)
 - `/produk` — **Template 2**: Landing Produk Digital (`F-01` s.d. `F-10`)
-- `/terima-kasih` — Halaman konfirmasi pasca-pembayaran (`CompletePayment`)
+- `/terima-kasih` — Halaman konfirmasi pasca-pembayaran (`CompletePayment`, `noindex`)
 - `/privasi` — Halaman kebijakan privasi template (perlu ditinjau pemilik sebelum dipakai)
 - `/404` — Halaman 404 bermerek dengan tautan kembali
 
-## Menjalankan Konfigurasi Demo vs Klien
-Proyek menyediakan 2 konfigurasi demo tanpa menimpa `src/config/site.config.ts` milik klien:
-- `src/config/site.config.ts` — Konfigurasi default klien (berisi penanda `TODO`)
-- `src/config/demo-edukasi.config.ts` — **Demo A**: Kreator edukasi menjual template Notion (fokus Template 2)
-- `src/config/demo-gadget.config.ts` — **Demo B**: Kreator review gadget dengan media kit (fokus Template 1)
+---
 
-Untuk berpindah konfigurasi, ubah **satu nama file** pada `src/config/active.config.ts`:
-```ts
-export { siteConfig } from './demo-edukasi.config';
-```
-Lalu jalankan `npm run dev` atau `npm run build`.
+## Klien Baru dalam 10 Langkah
 
-## Cara Menjalankan Lokal
-1. Salin `.env.example` menjadi `.env` dan isi environment variable server:
-   - `TIKTOK_PIXEL_ID`, `TIKTOK_ACCESS_TOKEN` (wajib untuk Events API sisi server)
-   - `GA4_MEASUREMENT_ID` (pembanding GA4)
-   - `MIDTRANS_SERVER_KEY` atau `XENDIT_SECRET_KEY` (hanya jika `checkout.enabled = true`)
-   - `SITE_URL` (URL produksi HTTPS untuk canonical & sitemap)
-2. Pasang dependency dan jalankan:
+1. **Pasang dependency**:
    ```bash
    npm install
+   ```
+2. **Pilih konfigurasi aktif** di `src/config/active.config.ts`:
+   - Gunakan `./site.config` untuk klien baru (atau `./demo-edukasi.config` / `./demo-gadget.config` untuk pratinjau demo).
+3. **Isi data klien** di `src/config/site.config.ts`:
+   - Ganti seluruh penanda `TODO` (profil, tautan, media kit, portofolio, produk, harga, FAQ, nomor WhatsApp `628...`, dan metadata SEO per halaman).
+4. **Siapkan gambar WebP/AVIF** (< 200 KB) di `public/images/` dan sesuaikan path-nya di `site.config.ts`.
+5. **Atur fitur opsional** di `src/config/site.config.ts`:
+   - `[OPSIONAL]` `tracking.requireConsent`: ubah ke `true` untuk menampilkan banner persetujuan privasi (`T-06`).
+   - `[OPSIONAL]` `checkout.enabled` & `checkout.provider`: ubah ke `true` (`'midtrans'` atau `'xendit'`) jika memakai checkout online (`F-07`).
+   - `[OPSIONAL]` `leadDestination`: pilih `'whatsapp'` (default), `'email'`, atau `'webhook'`.
+6. **Siapkan environment variable** dengan menyalin `.env.example` menjadi `.env` (lokal) atau mengisi di dashboard Vercel/Cloudflare:
+   - **Wajib**: `TIKTOK_PIXEL_ID`, `TIKTOK_ACCESS_TOKEN`, `SITE_URL`.
+   - **Opsional**: `GA4_MEASUREMENT_ID`, `MIDTRANS_SERVER_KEY` / `XENDIT_SECRET_KEY`, `LEAD_WEBHOOK_URL`, `TIKTOK_TEST_EVENT_CODE`.
+7. **Uji lokal**:
+   ```bash
    npm run dev
    ```
-3. Build output statis & cek tipe TypeScript:
+   Periksa tampilan pada lebar `360 px` di `/bio` dan `/produk`.
+8. **Jalankan validasi tipe & build produksi ketat**:
    ```bash
-   npm run build
    npm run typecheck
+   npm run build:prod
    ```
+   *(Build produksi otomatis gagal bila masih ada `TODO` atau kolom wajib kosong di config aktif).*
+9. **Jalankan pre-deploy check**:
+   ```bash
+   npm run predeploy
+   ```
+10. **Deploy ke Vercel / Cloudflare Pages (HTTPS)**, lalu selesaikan verifikasi di `docs/checklist-deploy.md`.
 
-## Kustomisasi untuk Klien Baru
-Seluruh teks, tautan, gambar, harga, nomor WhatsApp, dan toggle fitur dikelola dari **satu file**:
-- `src/config/site.config.ts`
+---
 
-Langkah kustomisasi:
-1. Cari semua penanda `TODO` di `src/config/site.config.ts` dan ganti dengan data klien.
-2. Letakkan aset gambar format WebP/AVIF di `public/images/` sesuai path di `site.config.ts`.
-3. Untuk mengaktifkan banner persetujuan privasi (`T-06`), ubah `tracking.requireConsent` menjadi `true`.
-4. Untuk mengaktifkan checkout online (`F-07`), ubah `checkout.enabled` menjadi `true` dan `checkout.provider` menjadi `'midtrans'` atau `'xendit'`, lalu isi API key di `.env` hosting (Vercel/Cloudflare).
+## Cara Uji di TikTok Test Events
+1. Buka **TikTok Events Manager** → pilih Pixel → tab **Test Events**, lalu salin **Test Event Code**.
+2. Isi `TIKTOK_TEST_EVENT_CODE` pada environment variable server (jangan di kode klien).
+3. Buka URL situs dengan parameter `?ttclid=test_123&utm_source=tiktok`, lalu muat halaman, klik tautan, dan kirim form.
+4. Pastikan event (`ViewContent`, `ClickButton`, `SubmitForm`, `InitiateCheckout`, `CompletePayment`) muncul dari sumber **Browser** dan **Server** dengan `event_id` yang sama (**Deduplicated**).
+5. **Kosongkan `TIKTOK_TEST_EVENT_CODE`** setelah selesai uji coba sebelum trafik iklan berjalan.
 
-## Checklist Uji Pra-Rilis (Setelah Deploy HTTPS)
-- [ ] Uji PageSpeed Insights mobile pada `/bio` dan `/produk` (target skor 90+, LCP < 2,5 detik di 4G).
-- [ ] Uji di TikTok In-App Browser (Android & iOS): pastikan tautan WhatsApp, form, dan tombol **"Buka di browser"** berfungsi.
-- [ ] Verifikasi di TikTok Events Manager bahwa `ViewContent`, `ClickButton`, `SubmitForm`, `InitiateCheckout`, dan `CompletePayment` terkirim dengan `event_id` terdeduplikasi.
+Detail lengkap tabel event tersedia di [docs/tracking-events.md](docs/tracking-events.md).
