@@ -104,6 +104,9 @@ const { phoneNumber } = siteConfig.whatsapp;
   import { trackEvent } from '../lib/tracking';
   import { buildWhatsAppUrl } from '../lib/whatsapp';
 
+  const RATE_LIMIT_KEY = 'tiktok_lp_inquiry_last_submit';
+  const COOLDOWN_MS = 30_000;
+
   const form = document.getElementById('brand-inquiry-form') as HTMLFormElement | null;
   const feedbackEl = document.getElementById('inquiry-feedback');
 
@@ -114,6 +117,20 @@ const { phoneNumber } = siteConfig.whatsapp;
     const honeypot = String(formData.get('website') || '').trim();
     if (honeypot.length > 0) {
       return;
+    }
+
+    try {
+      const lastSubmit = Number(window.sessionStorage.getItem(RATE_LIMIT_KEY) || 0);
+      const remainingMs = COOLDOWN_MS - (Date.now() - lastSubmit);
+      if (lastSubmit > 0 && remainingMs > 0) {
+        if (feedbackEl) {
+          feedbackEl.textContent = `Mohon tunggu ${Math.ceil(remainingMs / 1000)} detik sebelum mengirim ulang.`;
+          feedbackEl.classList.remove('hidden');
+        }
+        return;
+      }
+    } catch {
+      // Ignore storage errors in restricted browsers
     }
 
     const name = String(formData.get('name') || '').trim();
@@ -145,6 +162,12 @@ const { phoneNumber } = siteConfig.whatsapp;
       channel === 'email'
         ? `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(`Permintaan Kerja Sama - ${brand}`)}&body=${encodeURIComponent(formattedText)}`
         : buildWhatsAppUrl({ phoneNumber: phone, message: formattedText, includeUtm: true });
+
+    try {
+      window.sessionStorage.setItem(RATE_LIMIT_KEY, String(Date.now()));
+    } catch {
+      // Ignore storage errors
+    }
 
     if (feedbackEl) {
       feedbackEl.textContent = 'Data tercatat. Membuka aplikasi tujuan...';

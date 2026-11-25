@@ -93,6 +93,7 @@ const hasOnlineCheckout = checkoutEnabled && checkoutProvider !== 'none';
 </section>
 
 <script>
+  import { startOnlineCheckout } from '../lib/checkout';
   import { generateEventId, trackEvent } from '../lib/tracking';
   import { buildWhatsAppUrl } from '../lib/whatsapp';
 
@@ -135,26 +136,25 @@ const hasOnlineCheckout = checkoutEnabled && checkoutProvider !== 'none';
     checkoutBtn.textContent = 'Memproses pembayaran...';
     checkoutError?.classList.add('hidden');
 
-    try {
-      const returnUrl = `${window.location.origin}/terima-kasih?order_id=${encodeURIComponent(orderId)}&value=${amount}`;
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, productName, amount, orderId, returnUrl }),
-      });
-      const data = (await res.json()) as { ok?: boolean; checkoutUrl?: string; error?: string };
-      if (!res.ok || !data.checkoutUrl) {
-        throw new Error(data.error || 'Gagal memulai pembayaran.');
-      }
-      window.location.href = data.checkoutUrl;
-    } catch (err) {
-      if (checkoutError) {
-        checkoutError.textContent =
-          err instanceof Error ? err.message : 'Terjadi kesalahan saat checkout.';
-        checkoutError.classList.remove('hidden');
-      }
-      checkoutBtn.disabled = false;
-      checkoutBtn.textContent = 'Bayar Sekarang (Online)';
+    const returnUrl = `${window.location.origin}/terima-kasih?order_id=${encodeURIComponent(orderId)}&value=${amount}`;
+    const result = await startOnlineCheckout({
+      provider,
+      productName,
+      amount,
+      orderId,
+      returnUrl,
+    });
+
+    if (result.ok && result.checkoutUrl) {
+      window.location.href = result.checkoutUrl;
+      return;
     }
+
+    if (checkoutError) {
+      checkoutError.textContent = result.error || 'Terjadi kesalahan saat checkout.';
+      checkoutError.classList.remove('hidden');
+    }
+    checkoutBtn.disabled = false;
+    checkoutBtn.textContent = 'Bayar Sekarang (Online)';
   });
 </script>
