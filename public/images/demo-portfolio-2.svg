@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="Portofolio Demo 2">
+  <rect width="640" height="360" fill="#f1f5f9" />
+  <rect x="24" y="24" width="592" height="312" rx="16" fill="#cbd5e1" />
+  <text x="320" y="170" text-anchor="middle" font-family="system-ui,sans-serif" font-size="24" font-weight="700" fill="#0f172a">Portofolio Kampanye 2</text>
+  <text x="320" y="204" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="600" fill="#475569">[DEMO PLACEHOLDER]</text>
+</svg>

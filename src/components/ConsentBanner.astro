@@ -1,5 +1,5 @@
 ---
-import { siteConfig } from '../config/site.config';
+import { siteConfig } from '../config/active.config';
 
 const { requireConsent, consentBanner } = siteConfig.tracking;
 ---
@@ -13,7 +13,15 @@ const { requireConsent, consentBanner } = siteConfig.tracking;
       aria-live="polite"
       aria-label="Persetujuan privasi dan analitik"
     >
-      <p class="text-xs text-slate-700 leading-relaxed">{consentBanner.message}</p>
+      <p class="text-xs text-slate-700 leading-relaxed">
+        {consentBanner.message}{' '}
+        <a
+          href="/privasi"
+          class="font-semibold text-slate-900 underline underline-offset-2 hover:text-slate-700"
+        >
+          Baca Kebijakan Privasi
+        </a>.
+      </p>
       <div class="mt-3 flex items-center justify-end gap-2">
         <button
           id="consent-decline-btn"

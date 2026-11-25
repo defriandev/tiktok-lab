@@ -7,6 +7,20 @@ Paket template landing page berbasis Astro (output statis), Tailwind CSS, dan Ty
 - `/bio` — **Template 1**: Link-in-bio + Media Kit (`B-01` s.d. `B-05`)
 - `/produk` — **Template 2**: Landing Produk Digital (`F-01` s.d. `F-10`)
 - `/terima-kasih` — Halaman konfirmasi pasca-pembayaran (`CompletePayment`)
+- `/privasi` — Halaman kebijakan privasi template (perlu ditinjau pemilik sebelum dipakai)
+- `/404` — Halaman 404 bermerek dengan tautan kembali
+
+## Menjalankan Konfigurasi Demo vs Klien
+Proyek menyediakan 2 konfigurasi demo tanpa menimpa `src/config/site.config.ts` milik klien:
+- `src/config/site.config.ts` — Konfigurasi default klien (berisi penanda `TODO`)
+- `src/config/demo-edukasi.config.ts` — **Demo A**: Kreator edukasi menjual template Notion (fokus Template 2)
+- `src/config/demo-gadget.config.ts` — **Demo B**: Kreator review gadget dengan media kit (fokus Template 1)
+
+Untuk berpindah konfigurasi, ubah **satu nama file** pada `src/config/active.config.ts`:
+```ts
+export { siteConfig } from './demo-edukasi.config';
+```
+Lalu jalankan `npm run dev` atau `npm run build`.
 
 ## Cara Menjalankan Lokal
 1. Salin `.env.example` menjadi `.env` dan isi environment variable server:
