@@ -30,13 +30,15 @@ const { socialProof } = siteConfig.digitalProduct;
     socialProof.screenshots.length > 0 && (
       <div class="grid grid-cols-1 gap-3">
         {socialProof.screenshots.map((shot) => (
-          <div class="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+          <div class="aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
             <img
               src={shot.imageUrl}
               alt={shot.alt}
+              width="640"
+              height="400"
               loading="lazy"
               decoding="async"
-              class="h-auto w-full object-cover"
+              class="h-full w-full object-cover"
             />
           </div>
         ))}

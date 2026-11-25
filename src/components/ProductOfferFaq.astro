@@ -76,7 +76,7 @@ const hasOnlineCheckout = checkoutEnabled && checkoutProvider !== 'none';
       {
         offer.faqs.map((faq) => (
           <details class="group rounded-xl border border-slate-200 bg-white">
-            <summary class="touch-target flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-slate-900">
+            <summary class="touch-target flex cursor-pointer list-none items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900">
               <span class="pr-3">{faq.question}</span>
               <span aria-hidden="true" class="shrink-0 text-slate-500 group-open:rotate-45 transition-transform">
                 +
