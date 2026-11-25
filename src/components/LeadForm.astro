@@ -15,8 +15,12 @@ const { phoneNumber } = siteConfig.whatsapp;
 
   <form
     id="product-lead-form"
+    novalidate
     class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4"
+    data-destination={leadForm.leadDestination}
     data-phone={phoneNumber}
+    data-email={leadForm.emailAddress}
+    data-endpoint={leadForm.leadEndpoint}
     data-product-name={offer.productName}
     data-submit-label={leadForm.submitLabel}
   >
@@ -41,52 +45,116 @@ const { phoneNumber } = siteConfig.whatsapp;
         name="name"
         type="text"
         required
+        aria-describedby="lead-name-error"
         placeholder="Contoh: Siti Rahma"
         class="min-h-[44px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
       />
+      <p id="lead-name-error" class="hidden text-xs font-medium text-red-700" role="alert"></p>
     </div>
 
     <div class="space-y-1">
       <label for="lead-contact" class="block text-xs font-semibold text-slate-800">
-        Nomor WhatsApp atau Email
+        Nomor WhatsApp (08.. / 62..) atau Email
       </label>
       <input
         id="lead-contact"
         name="contact"
         type="text"
         required
+        aria-describedby="lead-contact-error"
         placeholder="0812xxxx atau email@contoh.com"
         class="min-h-[44px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
       />
+      <p id="lead-contact-error" class="hidden text-xs font-medium text-red-700" role="alert"></p>
     </div>
 
     <button
+      id="lead-submit-btn"
       type="submit"
-      class="touch-target w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+      class="touch-target w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
     >
       {leadForm.submitLabel}
     </button>
 
-    <p id="lead-feedback" class="hidden text-xs font-medium text-emerald-700" role="status"></p>
+    <p id="lead-feedback" class="hidden text-xs font-medium" role="status"></p>
+
+    <a
+      id="lead-fallback-wa"
+      href="#"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="touch-target hidden w-full items-center justify-center rounded-xl border border-slate-900 bg-white px-4 py-2.5 text-xs font-bold text-slate-900 hover:bg-slate-100"
+    >
+      Buka WhatsApp Secara Manual
+    </a>
   </form>
 </section>
 
 <script>
   import { trackEvent } from '../lib/tracking';
-  import { buildWhatsAppUrl } from '../lib/whatsapp';
+  import {
+    buildWhatsAppUrl,
+    getUtmParams,
+    validateRequiredText,
+    validateWhatsAppOrEmail,
+  } from '../lib/whatsapp';
 
   const RATE_LIMIT_KEY = 'tiktok_lp_lead_last_submit';
   const COOLDOWN_MS = 30_000;
 
-  const leadFormEl = document.getElementById('product-lead-form') as HTMLFormElement | null;
+  const formEl = document.getElementById('product-lead-form') as HTMLFormElement | null;
+  const nameInput = document.getElementById('lead-name') as HTMLInputElement | null;
+  const contactInput = document.getElementById('lead-contact') as HTMLInputElement | null;
+  const nameErrorEl = document.getElementById('lead-name-error');
+  const contactErrorEl = document.getElementById('lead-contact-error');
+  const submitBtn = document.getElementById('lead-submit-btn') as HTMLButtonElement | null;
   const feedbackEl = document.getElementById('lead-feedback');
+  const fallbackWaLink = document.getElementById('lead-fallback-wa') as HTMLAnchorElement | null;
 
-  leadFormEl?.addEventListener('submit', (event) => {
+  let isSubmitting = false;
+
+  function setFieldError(
+    input: HTMLInputElement | null,
+    errorEl: HTMLElement | null,
+    message: string | null
+  ): void {
+    if (!input || !errorEl) return;
+    if (message) {
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+      input.setAttribute('aria-invalid', 'true');
+    } else {
+      errorEl.textContent = '';
+      errorEl.classList.add('hidden');
+      input.removeAttribute('aria-invalid');
+    }
+  }
+
+  function showFeedback(message: string, isError: boolean): void {
+    if (!feedbackEl) return;
+    feedbackEl.textContent = message;
+    feedbackEl.classList.remove('hidden', 'text-emerald-700', 'text-red-700');
+    feedbackEl.classList.add(isError ? 'text-red-700' : 'text-emerald-700');
+  }
+
+  formEl?.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
 
-    const formData = new FormData(leadFormEl);
+    const formData = new FormData(formEl);
     const honeypot = String(formData.get('website') || '').trim();
-    if (honeypot.length > 0) {
+    if (honeypot.length > 0) return;
+
+    const name = String(formData.get('name') || '').trim();
+    const contact = String(formData.get('contact') || '').trim();
+
+    const nameErr = validateRequiredText(name, 'Nama lengkap');
+    const contactCheck = validateWhatsAppOrEmail(contact);
+
+    setFieldError(nameInput, nameErrorEl, nameErr);
+    setFieldError(contactInput, contactErrorEl, contactCheck.valid ? null : contactCheck.error || null);
+
+    if (nameErr || !contactCheck.valid) {
       return;
     }
 
@@ -94,30 +162,22 @@ const { phoneNumber } = siteConfig.whatsapp;
       const lastSubmit = Number(window.sessionStorage.getItem(RATE_LIMIT_KEY) || 0);
       const remainingMs = COOLDOWN_MS - (Date.now() - lastSubmit);
       if (lastSubmit > 0 && remainingMs > 0) {
-        if (feedbackEl) {
-          feedbackEl.textContent = `Mohon tunggu ${Math.ceil(remainingMs / 1000)} detik sebelum mengirim ulang.`;
-          feedbackEl.classList.remove('hidden');
-        }
+        showFeedback(
+          `Mohon tunggu ${Math.ceil(remainingMs / 1000)} detik sebelum mengirim ulang.`,
+          true
+        );
         return;
       }
     } catch {
-      // Ignore storage errors in restricted browsers
+      // Ignore storage errors
     }
 
-    const name = String(formData.get('name') || '').trim();
-    const contact = String(formData.get('contact') || '').trim();
-    if (!name || !contact) {
-      return;
-    }
-
-    const phoneNumber = leadFormEl.dataset.phone || '';
-    const productName = leadFormEl.dataset.productName || 'Produk Digital';
-    const submitLabel = leadFormEl.dataset.submitLabel || 'Kirim Data';
-
-    trackEvent('SubmitForm', {
-      content_name: `lead_${productName}`,
-      button_label: submitLabel,
-    });
+    const destination = formEl.dataset.destination || 'whatsapp';
+    const phoneNumber = formEl.dataset.phone || '';
+    const emailAddress = formEl.dataset.email || '';
+    const endpoint = formEl.dataset.endpoint || '/api/lead';
+    const productName = formEl.dataset.productName || 'Produk Digital';
+    const submitLabel = formEl.dataset.submitLabel || 'Kirim Data';
 
     const message = [
       `Halo, saya ${name}.`,
@@ -125,23 +185,99 @@ const { phoneNumber } = siteConfig.whatsapp;
       `Kontak saya: ${contact}`,
     ].join('\n');
 
-    const waUrl = buildWhatsAppUrl({
+    const waFallbackUrl = buildWhatsAppUrl({
       phoneNumber,
       message,
       includeUtm: true,
     });
 
-    try {
-      window.sessionStorage.setItem(RATE_LIMIT_KEY, String(Date.now()));
-    } catch {
-      // Ignore storage errors
+    isSubmitting = true;
+    fallbackWaLink?.classList.add('hidden');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Mengirim...';
     }
 
-    if (feedbackEl) {
-      feedbackEl.textContent = 'Terima kasih! Membuka WhatsApp...';
-      feedbackEl.classList.remove('hidden');
+    let success = false;
+
+    if (destination === 'webhook') {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            source: 'lead_form',
+            name,
+            contact,
+            message,
+            utms: getUtmParams(),
+          }),
+        });
+        if (!res.ok) {
+          throw new Error('Webhook failed');
+        }
+        success = true;
+        showFeedback('Data Anda berhasil dikirim. Tim kami akan segera menghubungi Anda.', false);
+      } catch {
+        showFeedback(
+          'Pengiriman otomatis gagal. Silakan lanjutkan melalui tombol WhatsApp di bawah.',
+          true
+        );
+        if (fallbackWaLink) {
+          fallbackWaLink.href = waFallbackUrl;
+          fallbackWaLink.classList.remove('hidden');
+          fallbackWaLink.classList.add('flex');
+        }
+      }
+    } else {
+      const targetUrl =
+        destination === 'email'
+          ? `mailto:${encodeURIComponent(emailAddress)}?subject=${encodeURIComponent(`Info Produk - ${productName}`)}&body=${encodeURIComponent(message)}`
+          : waFallbackUrl;
+
+      const opened = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      if (opened) {
+        success = true;
+        showFeedback('Data terkirim! Silakan lanjutkan di aplikasi tujuan.', false);
+      } else {
+        showFeedback(
+          'Browser memblokir pembukaan otomatis. Ketuk tombol di bawah untuk membuka WhatsApp.',
+          true
+        );
+        if (fallbackWaLink) {
+          fallbackWaLink.href = waFallbackUrl;
+          fallbackWaLink.classList.remove('hidden');
+          fallbackWaLink.classList.add('flex');
+        }
+      }
     }
 
-    window.open(waUrl, '_blank', 'noopener,noreferrer');
+    if (success) {
+      try {
+        window.sessionStorage.setItem(RATE_LIMIT_KEY, String(Date.now()));
+      } catch {
+        // Ignore storage errors
+      }
+      trackEvent('SubmitForm', {
+        content_name: `lead_${productName}`,
+        button_label: submitLabel,
+      });
+      formEl.reset();
+    }
+
+    isSubmitting = false;
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = submitLabel;
+    }
+  });
+
+  fallbackWaLink?.addEventListener('click', () => {
+    const productName = formEl?.dataset.productName || 'Produk Digital';
+    const submitLabel = formEl?.dataset.submitLabel || 'Kirim Data';
+    trackEvent('SubmitForm', {
+      content_name: `lead_${productName}_fallback`,
+      button_label: submitLabel,
+    });
   });
 </script>

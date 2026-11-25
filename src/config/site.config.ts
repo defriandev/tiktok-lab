@@ -110,8 +110,9 @@ export interface SiteConfig {
     inquiryForm: {
       sectionTitle: string;
       description: string;
-      deliveryChannel: 'whatsapp' | 'email';
+      leadDestination: 'whatsapp' | 'email' | 'webhook';
       emailAddress: string;
+      leadEndpoint: string;
       submitLabel: string;
     };
   };
@@ -152,6 +153,9 @@ export interface SiteConfig {
       enabled: boolean;
       sectionTitle: string;
       description: string;
+      leadDestination: 'whatsapp' | 'email' | 'webhook';
+      emailAddress: string;
+      leadEndpoint: string;
       submitLabel: string;
     };
   };
@@ -258,8 +262,9 @@ export const siteConfig: SiteConfig = {
     inquiryForm: {
       sectionTitle: 'Ajukan Kerja Sama Brand',
       description: 'Isi detail singkat kampanye Anda. Tim kami akan merespons maksimal 1x24 jam kerja.',
-      deliveryChannel: 'whatsapp',
+      leadDestination: 'whatsapp',
       emailAddress: 'TODO_EMAIL@example.com',
+      leadEndpoint: '/api/lead',
       submitLabel: 'Kirim Permintaan Kerja Sama',
     },
   },
@@ -335,6 +340,9 @@ export const siteConfig: SiteConfig = {
       enabled: true,
       sectionTitle: 'Minta Info atau Daftar Sekarang',
       description: 'Masukkan nama dan nomor WhatsApp aktif Anda untuk menerima detail penawaran.',
+      leadDestination: 'whatsapp',
+      emailAddress: 'TODO_EMAIL@example.com',
+      leadEndpoint: '/api/lead',
       submitLabel: 'Kirim Data',
     },
   },

@@ -32,9 +32,12 @@ const { productName } = siteConfig.digitalProduct.offer;
 <script>
   import { trackEvent } from '../lib/tracking';
 
+  // Only read non-PII transaction identifiers (never read name/email/phone from URL)
   const params = new URLSearchParams(window.location.search);
-  const orderId = params.get('order_id') || params.get('external_id') || undefined;
-  const value = Number(params.get('value') || 0) || undefined;
+  const rawOrderId = params.get('order_id') || params.get('external_id') || '';
+  const orderId = /^[A-Za-z0-9_-]{4,64}$/.test(rawOrderId) ? rawOrderId : undefined;
+  const rawValue = Number(params.get('value') || 0);
+  const value = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : undefined;
 
   trackEvent(
     'CompletePayment',

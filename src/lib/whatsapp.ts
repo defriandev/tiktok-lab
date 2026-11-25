@@ -1,5 +1,5 @@
 /**
- * WhatsApp deep-link builder and UTM parameter helper (F-05, F-09).
+ * WhatsApp deep-link builder, UTM parameter helper, and form validators (F-05, F-08, F-09, Modul 2).
  */
 
 const UTM_STORAGE_KEY = 'tiktok_lp_utm_params';
@@ -12,6 +12,66 @@ const UTM_KEYS = [
 ] as const;
 
 export type UtmParams = Partial<Record<(typeof UTM_KEYS)[number], string>>;
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const WHATSAPP_REGEX = /^(08|62)[0-9]{7,13}$/;
+
+export interface ContactValidationResult {
+  valid: boolean;
+  type?: 'whatsapp' | 'email';
+  error?: string;
+}
+
+/**
+ * Validates Indonesian WhatsApp numbers (08.. or 62..) or email addresses.
+ */
+export function validateWhatsAppOrEmail(rawValue: string): ContactValidationResult {
+  const value = rawValue.trim();
+  if (!value) {
+    return {
+      valid: false,
+      error: 'Nomor WhatsApp atau email wajib diisi.',
+    };
+  }
+
+  if (value.includes('@')) {
+    if (!EMAIL_REGEX.test(value)) {
+      return {
+        valid: false,
+        error: 'Format email tidak valid (contoh: nama@domain.com).',
+      };
+    }
+    return { valid: true, type: 'email' };
+  }
+
+  const normalizedPhone = value.replace(/[\s\-()+]/g, '');
+  if (!WHATSAPP_REGEX.test(normalizedPhone)) {
+    return {
+      valid: false,
+      error: 'Masukkan nomor WhatsApp valid (diawali 08 atau 62) atau email yang benar.',
+    };
+  }
+
+  return { valid: true, type: 'whatsapp' };
+}
+
+/**
+ * Validates required text fields with Indonesian error messages.
+ */
+export function validateRequiredText(
+  rawValue: string,
+  fieldLabel: string,
+  minLength = 2
+): string | null {
+  const value = rawValue.trim();
+  if (!value) {
+    return `${fieldLabel} wajib diisi.`;
+  }
+  if (value.length < minLength) {
+    return `${fieldLabel} minimal ${minLength} karakter.`;
+  }
+  return null;
+}
 
 /**
  * Reads UTM parameters from the current URL and caches them in sessionStorage
