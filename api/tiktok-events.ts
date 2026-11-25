@@ -1,6 +1,6 @@
 /**
- * Serverless endpoint for TikTok Events API (T-01, T-02, T-05, Modul 1).
- * Validates HTTP method & payload and avoids leaking upstream details.
+ * Serverless endpoint for TikTok Events API (T-01, T-02, T-05, Modul 3).
+ * Forwards event_id, ttclid, and ttp; supports optional TIKTOK_TEST_EVENT_CODE.
  */
 
 const ALLOWED_EVENTS = new Set([
@@ -14,6 +14,8 @@ const ALLOWED_EVENTS = new Set([
 interface IncomingEventBody {
   eventName?: unknown;
   eventId?: unknown;
+  ttclid?: unknown;
+  ttp?: unknown;
   url?: unknown;
   referrer?: unknown;
   customData?: unknown;
@@ -44,7 +46,9 @@ export async function POST(request: Request): Promise<Response> {
 
   const pixelId = process.env.TIKTOK_PIXEL_ID;
   const accessToken = process.env.TIKTOK_ACCESS_TOKEN;
-  const testEventCode = process.env.TIKTOK_TEST_EVENT_CODE;
+  const rawTestCode = process.env.TIKTOK_TEST_EVENT_CODE?.trim();
+  const testEventCode =
+    rawTestCode && !rawTestCode.startsWith('TODO') ? rawTestCode : undefined;
 
   let body: IncomingEventBody;
   try {
@@ -59,6 +63,8 @@ export async function POST(request: Request): Promise<Response> {
 
   const eventName = typeof body.eventName === 'string' ? body.eventName : '';
   const eventId = typeof body.eventId === 'string' ? body.eventId.trim() : '';
+  const ttclid = typeof body.ttclid === 'string' ? body.ttclid.trim().slice(0, 256) : undefined;
+  const ttp = typeof body.ttp === 'string' ? body.ttp.trim().slice(0, 256) : undefined;
   const url = typeof body.url === 'string' ? body.url.slice(0, 2048) : '';
   const referrer = typeof body.referrer === 'string' ? body.referrer.slice(0, 2048) : '';
   const customData =
@@ -80,6 +86,17 @@ export async function POST(request: Request): Promise<Response> {
     undefined;
   const userAgent = request.headers.get('user-agent') || undefined;
 
+  const userContext: Record<string, string | undefined> = {
+    ip: clientIp,
+    user_agent: userAgent,
+  };
+  if (ttclid) {
+    userContext.ttclid = ttclid;
+  }
+  if (ttp) {
+    userContext.ttp = ttp;
+  }
+
   const payload: Record<string, unknown> = {
     event_source: 'web',
     event_source_id: pixelId,
@@ -92,10 +109,7 @@ export async function POST(request: Request): Promise<Response> {
           url,
           referrer,
         },
-        user: {
-          ip: clientIp,
-          user_agent: userAgent,
-        },
+        user: userContext,
         properties: customData,
       },
     ],

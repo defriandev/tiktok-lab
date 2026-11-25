@@ -41,16 +41,22 @@ const { requireConsent, consentBanner } = siteConfig.tracking;
   const acceptBtn = document.getElementById('consent-accept-btn');
   const declineBtn = document.getElementById('consent-decline-btn');
 
+  let viewContentSentOnConsent = false;
+
   if (banner && getConsentStatus() === 'unset') {
     banner.classList.remove('hidden');
   }
 
   acceptBtn?.addEventListener('click', () => {
+    const previousStatus = getConsentStatus();
     setConsentStatus('granted');
     banner?.classList.add('hidden');
-    trackEvent('ViewContent', {
-      content_name: document.title,
-    });
+    if (previousStatus !== 'granted' && !viewContentSentOnConsent) {
+      viewContentSentOnConsent = true;
+      trackEvent('ViewContent', {
+        content_name: document.title,
+      });
+    }
   });
 
   declineBtn?.addEventListener('click', () => {
