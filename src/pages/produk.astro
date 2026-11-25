@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductHero from '../components/ProductHero.astro';
+import ProductSocialProof from '../components/ProductSocialProof.astro';
+import ProductBenefits from '../components/ProductBenefits.astro';
+import ProductOfferFaq from '../components/ProductOfferFaq.astro';
+import LeadForm from '../components/LeadForm.astro';
+import StickyMobileCta from '../components/StickyMobileCta.astro';
+import { siteConfig } from '../config/site.config';
+
+const { hero, offer, leadForm } = siteConfig.digitalProduct;
+---
+
+<BaseLayout
+  title={`${offer.productName} | ${siteConfig.linkInBio.profile.name}`}
+  description={hero.subheadline}
+  canonicalPath="/produk"
+>
+  <div class="space-y-8 pb-24">
+    <ProductHero />
+    <ProductSocialProof />
+    <ProductBenefits />
+    <ProductOfferFaq />
+    {leadForm.enabled && <LeadForm />}
+  </div>
+
+  <StickyMobileCta />
+</BaseLayout>

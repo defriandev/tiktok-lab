@@ -1,0 +1,124 @@
+---
+import { siteConfig } from '../config/site.config';
+
+const { leadForm, offer } = siteConfig.digitalProduct;
+const { phoneNumber } = siteConfig.whatsapp;
+---
+
+<section class="space-y-4 border-t border-slate-200 pt-6" aria-labelledby="lead-heading">
+  <div class="space-y-1">
+    <h2 id="lead-heading" class="text-lg font-bold text-slate-900">
+      {leadForm.sectionTitle}
+    </h2>
+    <p class="text-sm text-slate-600">{leadForm.description}</p>
+  </div>
+
+  <form
+    id="product-lead-form"
+    class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4"
+    data-phone={phoneNumber}
+    data-product-name={offer.productName}
+    data-submit-label={leadForm.submitLabel}
+  >
+    <!-- Honeypot field for spam protection -->
+    <div class="hidden" aria-hidden="true">
+      <label for="lead-website">Situs Web</label>
+      <input
+        id="lead-website"
+        name="website"
+        type="text"
+        tabindex="-1"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="space-y-1">
+      <label for="lead-name" class="block text-xs font-semibold text-slate-800">
+        Nama Lengkap
+      </label>
+      <input
+        id="lead-name"
+        name="name"
+        type="text"
+        required
+        placeholder="Contoh: Siti Rahma"
+        class="min-h-[44px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
+      />
+    </div>
+
+    <div class="space-y-1">
+      <label for="lead-contact" class="block text-xs font-semibold text-slate-800">
+        Nomor WhatsApp atau Email
+      </label>
+      <input
+        id="lead-contact"
+        name="contact"
+        type="text"
+        required
+        placeholder="0812xxxx atau email@contoh.com"
+        class="min-h-[44px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
+      />
+    </div>
+
+    <button
+      type="submit"
+      class="touch-target w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+    >
+      {leadForm.submitLabel}
+    </button>
+
+    <p id="lead-feedback" class="hidden text-xs font-medium text-emerald-700" role="status"></p>
+  </form>
+</section>
+
+<script>
+  import { trackEvent } from '../lib/tracking';
+  import { buildWhatsAppUrl } from '../lib/whatsapp';
+
+  const leadFormEl = document.getElementById('product-lead-form') as HTMLFormElement | null;
+  const feedbackEl = document.getElementById('lead-feedback');
+
+  leadFormEl?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(leadFormEl);
+    const honeypot = String(formData.get('website') || '').trim();
+    if (honeypot.length > 0) {
+      return;
+    }
+
+    const name = String(formData.get('name') || '').trim();
+    const contact = String(formData.get('contact') || '').trim();
+    if (!name || !contact) {
+      return;
+    }
+
+    const phoneNumber = leadFormEl.dataset.phone || '';
+    const productName = leadFormEl.dataset.productName || 'Produk Digital';
+    const submitLabel = leadFormEl.dataset.submitLabel || 'Kirim Data';
+
+    trackEvent('SubmitForm', {
+      content_name: `lead_${productName}`,
+      button_label: submitLabel,
+    });
+
+    const message = [
+      `Halo, saya ${name}.`,
+      `Saya ingin info lebih lanjut tentang ${productName}.`,
+      `Kontak saya: ${contact}`,
+    ].join('\n');
+
+    const waUrl = buildWhatsAppUrl({
+      phoneNumber,
+      message,
+      includeUtm: true,
+    });
+
+    if (feedbackEl) {
+      feedbackEl.textContent = 'Terima kasih! Membuka WhatsApp...';
+      feedbackEl.classList.remove('hidden');
+    }
+
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+  });
+</script>

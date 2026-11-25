@@ -1,0 +1,77 @@
+---
+/**
+ * TikTok in-app browser detector & "Buka di browser" fallback helper.
+ */
+---
+
+<div
+  id="inapp-browser-bar"
+  class="hidden border-b border-amber-300 bg-amber-50 px-4 py-3 text-amber-950"
+  role="region"
+  aria-label="Bantuan browser eksternal"
+>
+  <div class="mx-auto flex max-w-md items-center justify-between gap-3">
+    <p id="inapp-browser-msg" class="text-xs font-medium leading-snug">
+      Tautan tidak terbuka di browser TikTok? Buka di browser eksternal.
+    </p>
+    <button
+      id="open-external-browser-btn"
+      type="button"
+      class="touch-target shrink-0 rounded-lg bg-amber-900 px-3 py-2 text-xs font-bold text-white hover:bg-amber-800"
+    >
+      Buka di browser
+    </button>
+  </div>
+</div>
+
+<script>
+  const ua = navigator.userAgent || '';
+  const isTikTokInApp = /BytedanceWebview|TikTok|musical_ly|trill/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
+
+  const bar = document.getElementById('inapp-browser-bar');
+  const msgEl = document.getElementById('inapp-browser-msg');
+  const openBtn = document.getElementById('open-external-browser-btn');
+
+  if (isTikTokInApp && bar) {
+    bar.classList.remove('hidden');
+
+    // Highlight helper if a WhatsApp deep link does not leave the page quickly
+    document.addEventListener('click', (event) => {
+      const target = (event.target as HTMLElement | null)?.closest('a[href*="wa.me"]');
+      if (!target) {
+        return;
+      }
+      window.setTimeout(() => {
+        if (!document.hidden && msgEl) {
+          msgEl.textContent =
+            'WhatsApp gagal terbuka? Ketuk "Buka di browser" untuk melanjutkan.';
+          bar.classList.add('ring-2', 'ring-amber-500');
+        }
+      }, 1200);
+    });
+  }
+
+  openBtn?.addEventListener('click', async () => {
+    const currentUrl = window.location.href;
+    if (isAndroid) {
+      const stripped = currentUrl.replace(/^https?:\/\//, '');
+      window.location.href = `intent://${stripped}#Intent;scheme=https;package=com.android.chrome;end`;
+      return;
+    }
+
+    // iOS Safari fallback: copy URL and instruct user
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+      if (msgEl) {
+        msgEl.textContent =
+          'Tautan disalin! Ketuk ikon ⋯ di pojok kanan atas lalu pilih "Buka di Safari".';
+      }
+    } catch {
+      if (msgEl) {
+        msgEl.textContent =
+          'Ketuk ikon ⋯ di pojok kanan atas lalu pilih "Buka di Safari".';
+      }
+    }
+  });
+</script>

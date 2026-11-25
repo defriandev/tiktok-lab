@@ -1,0 +1,160 @@
+---
+import { siteConfig } from '../config/site.config';
+
+const { offer } = siteConfig.digitalProduct;
+const { phoneNumber, defaultMessage } = siteConfig.whatsapp;
+const { enabled: checkoutEnabled, provider: checkoutProvider } = siteConfig.checkout;
+const cleanPhone = phoneNumber.replace(/\D/g, '');
+const whatsappHref = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+  `${defaultMessage} (${offer.productName})`
+)}`;
+const hasOnlineCheckout = checkoutEnabled && checkoutProvider !== 'none';
+---
+
+<section
+  id="penawaran"
+  class="space-y-6 border-t border-slate-200 pt-6"
+  aria-labelledby="offer-heading"
+>
+  <!-- Offer & Pricing Card -->
+  <div class="rounded-2xl border-2 border-slate-900 bg-white p-5 space-y-4">
+    <div class="space-y-1">
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {offer.sectionTitle}
+      </p>
+      <h2 id="offer-heading" class="text-xl font-bold text-slate-900">
+        {offer.productName}
+      </h2>
+    </div>
+
+    <div class="flex items-baseline gap-3">
+      <span class="text-sm text-slate-500 line-through">{offer.originalPrice}</span>
+      <span class="text-2xl font-extrabold text-slate-900">{offer.promoPrice}</span>
+    </div>
+
+    {
+      hasOnlineCheckout && (
+        <button
+          id="online-checkout-btn"
+          type="button"
+          data-provider={checkoutProvider}
+          data-product-name={offer.productName}
+          data-amount={offer.priceNumeric}
+          class="touch-target flex w-full items-center justify-center rounded-xl bg-slate-900 px-5 py-3.5 text-sm font-bold text-white transition-colors hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+        >
+          Bayar Sekarang (Online)
+        </button>
+      )
+    }
+
+    <a
+      href={whatsappHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-wa-offer-cta
+      data-wa-phone={cleanPhone}
+      data-wa-message={`${defaultMessage} (${offer.productName})`}
+      data-track-product-cta
+      data-cta-label={offer.ctaLabel}
+      data-product-name={offer.productName}
+      class:list={[
+        'touch-target flex w-full items-center justify-center rounded-xl px-5 py-3.5 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900',
+        hasOnlineCheckout
+          ? 'border border-slate-300 bg-white text-slate-900 hover:bg-slate-50'
+          : 'bg-slate-900 text-white hover:bg-slate-800',
+      ]}
+    >
+      {offer.ctaLabel}
+    </a>
+    <p id="checkout-error" class="hidden text-xs font-medium text-red-700" role="alert"></p>
+  </div>
+
+  <!-- FAQ Accordion (Native details/summary, zero JS) -->
+  <div class="space-y-3">
+    <h3 class="text-base font-bold text-slate-900">Pertanyaan yang Sering Diajukan</h3>
+    <div class="space-y-2">
+      {
+        offer.faqs.map((faq) => (
+          <details class="group rounded-xl border border-slate-200 bg-white">
+            <summary class="touch-target flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-slate-900">
+              <span class="pr-3">{faq.question}</span>
+              <span aria-hidden="true" class="shrink-0 text-slate-500 group-open:rotate-45 transition-transform">
+                +
+              </span>
+            </summary>
+            <div class="border-t border-slate-100 px-4 py-3 text-sm text-slate-700 leading-relaxed">
+              {faq.answer}
+            </div>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  import { generateEventId, trackEvent } from '../lib/tracking';
+  import { buildWhatsAppUrl } from '../lib/whatsapp';
+
+  document.querySelectorAll<HTMLAnchorElement>('[data-wa-offer-cta]').forEach((anchor) => {
+    const phoneNumber = anchor.dataset.waPhone || '';
+    const message = anchor.dataset.waMessage || '';
+    if (phoneNumber && message) {
+      anchor.href = buildWhatsAppUrl({
+        phoneNumber,
+        message,
+        includeUtm: true,
+      });
+    }
+  });
+
+  const checkoutBtn = document.getElementById('online-checkout-btn') as HTMLButtonElement | null;
+  const checkoutError = document.getElementById('checkout-error');
+
+  checkoutBtn?.addEventListener('click', async () => {
+    const provider = checkoutBtn.dataset.provider as 'midtrans' | 'xendit' | undefined;
+    const productName = checkoutBtn.dataset.productName || 'Produk Digital';
+    const amount = Number(checkoutBtn.dataset.amount || 0);
+    if (!provider || amount <= 0) {
+      return;
+    }
+
+    const orderId = generateEventId();
+    trackEvent(
+      'InitiateCheckout',
+      {
+        content_name: productName,
+        content_id: orderId,
+        value: amount,
+        currency: 'IDR',
+      },
+      orderId
+    );
+
+    checkoutBtn.disabled = true;
+    checkoutBtn.textContent = 'Memproses pembayaran...';
+    checkoutError?.classList.add('hidden');
+
+    try {
+      const returnUrl = `${window.location.origin}/terima-kasih?order_id=${encodeURIComponent(orderId)}&value=${amount}`;
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, productName, amount, orderId, returnUrl }),
+      });
+      const data = (await res.json()) as { ok?: boolean; checkoutUrl?: string; error?: string };
+      if (!res.ok || !data.checkoutUrl) {
+        throw new Error(data.error || 'Gagal memulai pembayaran.');
+      }
+      window.location.href = data.checkoutUrl;
+    } catch (err) {
+      if (checkoutError) {
+        checkoutError.textContent =
+          err instanceof Error ? err.message : 'Terjadi kesalahan saat checkout.';
+        checkoutError.classList.remove('hidden');
+      }
+      checkoutBtn.disabled = false;
+      checkoutBtn.textContent = 'Bayar Sekarang (Online)';
+    }
+  });
+</script>

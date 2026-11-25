@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config/site.config';
+
+const { productName } = siteConfig.digitalProduct.offer;
+---
+
+<BaseLayout
+  title={`Terima Kasih | ${productName}`}
+  description="Konfirmasi pesanan dan akses produk digital Anda."
+  canonicalPath="/terima-kasih"
+>
+  <section class="space-y-5 py-10 text-center">
+    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700">
+      ✓
+    </div>
+    <h1 class="text-2xl font-extrabold text-slate-900">Terima Kasih!</h1>
+    <p class="text-sm text-slate-700 leading-relaxed">
+      Pesanan Anda untuk <strong>{productName}</strong> sedang diproses. Detail akses akan dikirimkan ke kontak Anda.
+    </p>
+    <div class="pt-2">
+      <a
+        href="/produk"
+        class="touch-target inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50"
+      >
+        Kembali ke Halaman Produk
+      </a>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { trackEvent } from '../lib/tracking';
+
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('order_id') || params.get('external_id') || undefined;
+  const value = Number(params.get('value') || 0) || undefined;
+
+  trackEvent(
+    'CompletePayment',
+    {
+      content_name: document.title,
+      content_id: orderId,
+      value,
+      currency: 'IDR',
+    },
+    orderId
+  );
+</script>

@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LinkInBioProfile from '../components/LinkInBioProfile.astro';
+import MediaKitSection from '../components/MediaKitSection.astro';
+import PortfolioGallery from '../components/PortfolioGallery.astro';
+import BrandInquiryForm from '../components/BrandInquiryForm.astro';
+import { siteConfig } from '../config/site.config';
+
+const { profile } = siteConfig.linkInBio;
+---
+
+<BaseLayout
+  title={`${profile.name} (${profile.handle}) | Link & Media Kit`}
+  description={profile.bio}
+  canonicalPath="/bio"
+>
+  <div class="space-y-8 pb-8">
+    <LinkInBioProfile />
+    <MediaKitSection />
+    <PortfolioGallery />
+    <BrandInquiryForm />
+  </div>
+</BaseLayout>

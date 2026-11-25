@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config/site.config';
+---
+
+<BaseLayout
+  title={siteConfig.site.title}
+  description={siteConfig.site.description}
+  canonicalPath="/"
+>
+  <section class="space-y-6 py-8">
+    <header class="space-y-2">
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        Pratinjau Paket Template
+      </p>
+      <h1 class="text-2xl font-bold text-slate-900">
+        {siteConfig.linkInBio.profile.name}
+      </h1>
+      <p class="text-sm text-slate-600">
+        Pilih template di bawah untuk meninjau implementasi.
+      </p>
+    </header>
+
+    <nav class="space-y-3" aria-label="Daftar template">
+      <a
+        href="/bio"
+        class="touch-target block rounded-xl border border-slate-900 bg-slate-50 p-4 transition-colors hover:bg-slate-100"
+      >
+        <p class="font-semibold text-slate-900">Template 1: Link-in-Bio + Media Kit →</p>
+        <p class="mt-1 text-sm text-slate-700">Status: Selesai di Fase 2 (siap diaudit).</p>
+      </a>
+      <a
+        href="/produk"
+        class="touch-target block rounded-xl border border-slate-900 bg-slate-50 p-4 transition-colors hover:bg-slate-100"
+      >
+        <p class="font-semibold text-slate-900">Template 2: Landing Produk Digital →</p>
+        <p class="mt-1 text-sm text-slate-700">Status: Selesai di Fase 3 (siap diaudit).</p>
+      </a>
+    </nav>
+  </section>
+</BaseLayout>

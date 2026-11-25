@@ -1,0 +1,27 @@
+---
+import { siteConfig } from '../config/site.config';
+
+const { offer } = siteConfig.digitalProduct;
+---
+
+<div
+  class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden"
+  role="region"
+  aria-label="Aksi cepat pemesanan"
+>
+  <div class="mx-auto flex max-w-md items-center justify-between gap-3">
+    <div class="min-w-0">
+      <p class="truncate text-xs font-medium text-slate-600">{offer.productName}</p>
+      <p class="text-sm font-extrabold text-slate-900">{offer.promoPrice}</p>
+    </div>
+    <a
+      href="#penawaran"
+      data-track-product-cta
+      data-cta-label={`Sticky: ${offer.ctaLabel}`}
+      data-product-name={offer.productName}
+      class="touch-target shrink-0 inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-slate-800"
+    >
+      Pesan Sekarang
+    </a>
+  </div>
+</div>

@@ -1,0 +1,85 @@
+---
+import '../styles/global.css';
+import ConsentBanner from '../components/ConsentBanner.astro';
+import InAppBrowserHelper from '../components/InAppBrowserHelper.astro';
+import { siteConfig } from '../config/site.config';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  canonicalPath?: string;
+}
+
+const {
+  title = siteConfig.site.title,
+  description = siteConfig.site.description,
+  ogImage = siteConfig.site.ogImage,
+  canonicalPath = '/',
+} = Astro.props;
+
+const canonicalUrl = new URL(canonicalPath, siteConfig.site.canonicalUrl).toString();
+const trackingConfigJson = JSON.stringify({
+  tiktokPixelId: siteConfig.tracking.tiktokPixelId,
+  ga4MeasurementId: siteConfig.tracking.ga4MeasurementId,
+  eventsApiEndpoint: siteConfig.tracking.eventsApiEndpoint,
+  requireConsent: siteConfig.tracking.requireConsent,
+});
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={siteConfig.site.locale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImage} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+  </head>
+  <body class="min-h-screen bg-white text-slate-900 antialiased">
+    <InAppBrowserHelper />
+    <main class="mx-auto w-full max-w-md px-4 py-6">
+      <slot />
+    </main>
+
+    <ConsentBanner />
+
+    <script
+      is:inline
+      id="tracking-config"
+      type="application/json"
+      set:html={trackingConfigJson}
+    ></script>
+    <script>
+      import {
+        initTracking,
+        isTrackingAllowed,
+        trackEvent,
+        type TrackingConfig,
+      } from '../lib/tracking';
+
+      const configEl = document.getElementById('tracking-config');
+      if (configEl?.textContent) {
+        const config = JSON.parse(configEl.textContent) as TrackingConfig;
+        initTracking(config);
+        if (isTrackingAllowed(config.requireConsent)) {
+          trackEvent('ViewContent', {
+            content_name: document.title,
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
